@@ -1,16 +1,22 @@
 
 import { Link } from 'react-router-dom';
 import { FadeIn } from '@/components/animations/FadeIn';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { ContactForm } from '@/components/ContactForm';
 
 export function Home() {
     const [isClicked, setIsClicked] = useState(false);
+    const aboutRef = useRef<HTMLElement>(null);
+    const bespokeRef = useRef<HTMLElement>(null);
 
     const handleClick = useCallback(() => {
         setIsClicked(true);
         setTimeout(() => setIsClicked(false), 500);
+    }, []);
+
+    const scrollToSection = useCallback((ref: React.RefObject<HTMLElement | null>) => {
+        ref.current?.scrollIntoView({ behavior: 'smooth' });
     }, []);
 
     return (
@@ -53,7 +59,7 @@ export function Home() {
                                 <span className="relative z-10 font-medium">View Store</span>
                             </Link>
                             <button
-                                onClick={() => document.getElementById('bespoke')?.scrollIntoView({ behavior: 'smooth' })}
+                                onClick={() => scrollToSection(bespokeRef)}
                                 className="text-[10px] uppercase tracking-[0.4em] text-charcoal dark:text-off-white opacity-60 hover:opacity-100 transition-opacity border-b border-transparent hover:border-charcoal/30 dark:hover:border-white/30 pb-1"
                             >
                                 Custom Order
@@ -63,7 +69,7 @@ export function Home() {
                 </FadeIn>
 
                 <button
-                    onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
+                    onClick={() => scrollToSection(aboutRef)}
                     className="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-30 animate-bounce cursor-pointer"
                 >
                     <span className="material-symbols-outlined text-charcoal dark:text-white text-2xl">expand_more</span>
@@ -71,7 +77,7 @@ export function Home() {
             </section>
 
             {/* About Section */}
-            <section className="py-32 px-6 md:px-24 bg-off-white dark:bg-bg-dark transition-colors duration-500" id="about">
+            <section ref={aboutRef} className="py-32 px-6 md:px-24 bg-off-white dark:bg-bg-dark transition-colors duration-500">
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-20 items-center max-w-7xl mx-auto">
                     <div className="md:col-span-6 space-y-10">
@@ -107,7 +113,7 @@ export function Home() {
             </section>
 
             {/* Bespoke Creations Section */}
-            <section className="py-40 px-6 text-center border-y border-stone-200 dark:border-white/5 bg-off-white dark:bg-bg-dark transition-colors duration-500" id="bespoke">
+            <section ref={bespokeRef} className="py-40 px-6 text-center border-y border-stone-200 dark:border-white/5 bg-off-white dark:bg-bg-dark transition-colors duration-500">
 
                 <FadeIn>
                     <h3 className="text-5xl md:text-8xl font-display mb-10 text-bronze-black dark:text-off-white">Custom Creations</h3>
