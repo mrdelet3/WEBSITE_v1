@@ -77,7 +77,7 @@ export function Home() {
             </section>
 
             {/* About Section */}
-            <section ref={aboutRef} className="py-32 px-6 md:px-24 bg-off-white dark:bg-bg-dark transition-colors duration-500">
+            <section id="about" ref={aboutRef} className="py-32 px-6 md:px-24 bg-off-white dark:bg-bg-dark transition-colors duration-500">
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-20 items-center max-w-7xl mx-auto">
                     <div className="md:col-span-6 space-y-10">
@@ -113,7 +113,7 @@ export function Home() {
             </section>
 
             {/* Bespoke Creations Section */}
-            <section ref={bespokeRef} className="py-40 px-6 text-center border-y border-stone-200 dark:border-white/5 bg-off-white dark:bg-bg-dark transition-colors duration-500">
+            <section id="bespoke" ref={bespokeRef} className="py-40 px-6 text-center border-y border-stone-200 dark:border-white/5 bg-off-white dark:bg-bg-dark transition-colors duration-500">
 
                 <FadeIn>
                     <h3 className="text-5xl md:text-8xl font-display mb-10 text-bronze-black dark:text-off-white">Custom Creations</h3>
