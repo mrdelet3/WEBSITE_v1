@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
@@ -22,6 +22,21 @@ export function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
     const { theme, toggleTheme } = useTheme();
+    const [mobileExpandedItems, setExpandedMobileItems] = useState<string[]>([]);
+
+    useEffect(() => {
+        // Automatically expand submenu if we are on a relevant page
+        const activeItem = MAIN_NAV.find(item =>
+            item.hasSubmenu && location.pathname.startsWith(item.path)
+        );
+
+        if (activeItem) {
+            setExpandedMobileItems(prev => {
+                if (prev.includes(activeItem.label)) return prev;
+                return [...prev, activeItem.label];
+            });
+        }
+    }, [location.pathname]);
 
     const { cart } = useCart();
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -43,31 +58,58 @@ export function Sidebar() {
     return (
         <>
             {/* Mobile/Tablet Header */}
-            <header className="lg:hidden fixed top-0 w-full bg-bg-warm/95 dark:bg-bg-dark/95 backdrop-blur-sm z-50 border-b border-stone-100 dark:border-white/5 p-6 flex justify-between items-center transition-colors duration-500">
+            <header className="lg:hidden fixed top-0 w-full bg-bg-warm/95 dark:bg-bg-dark/95 backdrop-blur-sm z-50 border-b border-stone-100 dark:border-white/5 p-4 flex justify-between items-center transition-colors duration-500">
                 <Link to="/" onClick={handleScrollTop}>
-                    <h1 className="text-xl tracking-[0.3em] uppercase font-light text-charcoal dark:text-off-white">Alexey Kukhtin</h1>
+                    <h1 className="text-xl tracking-[0.3em] uppercase font-display font-light text-charcoal dark:text-off-white">Alexey Kukhtin</h1>
                 </Link>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-4">
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center justify-center border border-stone-100 dark:border-white/10 rounded-full w-8 h-8 hover:border-gold-beige dark:hover:border-gold-beige transition-all duration-500"
+                        aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+                        className="flex items-center justify-center border border-stone-100 dark:border-white/10 rounded-full w-11 h-11 hover:border-gold-beige dark:hover:border-gold-beige transition-all duration-500"
                     >
-                        <span className="material-symbols-outlined text-sm text-charcoal/40 dark:text-white/40">
+                        <span
+                            className="material-symbols-outlined text-[17px] text-charcoal dark:text-off-white transition-all duration-500"
+                            style={{ fontVariationSettings: "'wght' 300" }}
+                            aria-hidden="true"
+                        >
                             {theme === 'light' ? 'light_mode' : 'dark_mode'}
                         </span>
                     </button>
-                    <Link to="/checkout" className="relative flex items-center">
-                        <span className="material-symbols-outlined text-2xl text-accent">shopping_bag</span>
+                    <Link to="/checkout" className="relative flex items-center p-2 group" aria-label={`View cart, ${totalItems} item${totalItems !== 1 ? 's' : ''}`}>
+                        <span
+                            className="material-symbols-outlined text-[22px] text-charcoal dark:text-off-white transition-colors duration-500"
+                            style={{ fontVariationSettings: "'wght' 300" }}
+                            aria-hidden="true"
+                        >
+                            shopping_bag
+                        </span>
                         {totalItems > 0 && (
-                            <span className="absolute -top-1 -right-1 flex items-center justify-center bg-stone-100 dark:bg-white/10 text-stone-500 dark:text-accent rounded-full w-4 h-4 text-[8px] font-medium transition-colors">{totalItems}</span>
+                            <span aria-hidden="true" className="absolute top-0 right-0 flex items-center justify-center bg-primary text-off-white dark:text-bg-dark rounded-full w-5 h-5 text-[10px] font-bold shadow-sm ring-2 ring-bg-warm dark:ring-bg-dark transition-all duration-500">
+                                {totalItems}
+                            </span>
                         )}
                     </Link>
-                    <button className="material-symbols-outlined text-2xl text-bronze-black dark:text-off-white" onClick={() => setIsMobileMenuOpen(true)}>menu</button>
+                    <button
+                        aria-label="Open navigation menu"
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="mobile-menu"
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        className="flex items-center justify-center w-11 h-11"
+                    >
+                        <span
+                            className="material-symbols-outlined text-[24px] text-charcoal dark:text-off-white"
+                            style={{ fontVariationSettings: "'wght' 300" }}
+                            aria-hidden="true"
+                        >
+                            menu
+                        </span>
+                    </button>
                 </div>
             </header>
 
             {/* Desktop Sidebar */}
-            <nav className="fixed left-0 top-0 h-full w-64 p-12 hidden lg:flex flex-col border-r border-stone-100 dark:border-white/5 z-50 bg-white dark:bg-bg-dark text-charcoal dark:text-off-white transition-colors duration-500">
+            <nav aria-label="Main navigation" className="fixed left-0 top-0 h-full w-64 p-12 hidden lg:flex flex-col border-r border-stone-100 dark:border-white/5 z-50 bg-white dark:bg-bg-dark text-charcoal dark:text-off-white transition-colors duration-500">
                 <div className="mb-24">
                     <Link to="/" onClick={handleScrollTop}>
                         <h1 className="text-[20px] tracking-[0.55em] uppercase font-display text-charcoal dark:text-off-white leading-relaxed -ml-1">
@@ -82,12 +124,9 @@ export function Sidebar() {
                         <li key={item.label}>
                             <Link
                                 to={{ pathname: item.path, hash: item.hash }}
+                                aria-current={isActive(item.path, item.hash) ? 'page' : undefined}
                                 onClick={() => {
                                     if (item.path === '/' && !item.hash) handleScrollTop();
-                                    if (item.hash) {
-                                        const element = document.querySelector(item.hash);
-                                        element?.scrollIntoView({ behavior: 'smooth' });
-                                    }
                                 }}
                                 className={cn(
                                     "text-[11px] uppercase tracking-[0.4em] font-light transition-all duration-500",
@@ -105,7 +144,7 @@ export function Sidebar() {
                                         <li key={subItem.path}>
                                             <Link to={subItem.path} className={cn(
                                                 "text-[10px] uppercase tracking-[0.3em] block transition-all",
-                                                isActive(subItem.path) ? "font-medium text-accent" : "text-charcoal/30 dark:text-white/30 hover:text-charcoal dark:hover:text-white"
+                                                isActive(subItem.path) ? "font-medium text-primary dark:text-gold-beige" : "text-charcoal/30 dark:text-white/30 hover:text-charcoal dark:hover:text-white"
                                             )}>
                                                 {subItem.label}
                                             </Link>
@@ -116,9 +155,20 @@ export function Sidebar() {
                         </li>
                     ))}
                     <li>
-                        <Link to="/checkout" className="flex items-center gap-3 group">
-                            <span className="material-symbols-outlined text-xl transition-transform group-hover:scale-110 text-accent">shopping_bag</span>
-                            <span className="text-[10px] uppercase tracking-[0.3em] opacity-40">({totalItems})</span>
+                        <Link to="/checkout" className="flex items-center gap-4 group relative w-fit">
+                            <div className="relative">
+                                <span
+                                    className="material-symbols-outlined text-[20px] text-charcoal dark:text-off-white group-hover:text-primary dark:group-hover:text-gold-beige transition-all duration-500"
+                                    style={{ fontVariationSettings: "'wght' 300" }}
+                                >
+                                    shopping_bag
+                                </span>
+                                {totalItems > 0 && (
+                                    <span aria-hidden="true" className="absolute -top-1 -right-1 flex items-center justify-center bg-primary text-off-white dark:text-bg-dark rounded-full min-w-[14px] h-[14px] px-1 text-[8px] font-bold ring-2 ring-white dark:ring-bg-dark transition-all duration-500">
+                                        {totalItems}
+                                    </span>
+                                )}
+                            </div>
                         </Link>
                     </li>
                 </ul>
@@ -126,14 +176,19 @@ export function Sidebar() {
                 <div className="mt-auto pt-12 flex flex-col gap-12">
                     <button
                         onClick={toggleTheme}
+                        aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
                         className="flex items-center justify-center border border-stone-100 dark:border-white/5 rounded-full w-10 h-10 hover:border-gold-beige dark:hover:border-gold-beige transition-all duration-500 group"
                     >
-                        <span className="material-symbols-outlined text-base text-charcoal/20 dark:text-white/20 group-hover:text-charcoal dark:group-hover:text-white transition-colors">
+                        <span
+                            className="material-symbols-outlined text-sm text-charcoal dark:text-off-white group-hover:text-charcoal dark:group-hover:text-white transition-colors"
+                            style={{ fontVariationSettings: "'wght' 300" }}
+                            aria-hidden="true"
+                        >
                             {theme === 'light' ? 'light_mode' : 'dark_mode'}
                         </span>
                     </button>
 
-                    <div className="text-[8px] tracking-[0.3em] uppercase opacity-30 leading-loose">
+                    <div className="text-[8px] tracking-[0.3em] uppercase opacity-50 leading-loose">
                         <p>© 2026 ALEXEY KUKHTIN</p>
                         <p>ALL RIGHTS RESERVED</p>
                     </div>
@@ -142,35 +197,98 @@ export function Sidebar() {
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-[60] bg-white dark:bg-bg-dark flex flex-col p-12 lg:hidden animate-in fade-in transition-colors duration-500">
+                <div
+                    id="mobile-menu"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Navigation menu"
+                    className="fixed inset-0 z-[60] bg-white dark:bg-bg-dark flex flex-col p-12 lg:hidden animate-in fade-in transition-colors duration-500"
+                >
                     <div className="flex justify-end mb-12">
-                        <button onClick={() => setIsMobileMenuOpen(false)}>
-                            <span className="material-symbols-outlined text-4xl text-charcoal dark:text-white">close</span>
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            aria-label="Close navigation menu"
+                            className="flex items-center justify-center w-11 h-11"
+                        >
+                            <span
+                                className="material-symbols-outlined text-3xl text-charcoal dark:text-off-white"
+                                style={{ fontVariationSettings: "'wght' 300" }}
+                                aria-hidden="true"
+                            >
+                                close
+                            </span>
                         </button>
                     </div>
-                    <nav className="flex flex-col space-y-10 text-center justify-center flex-grow">
+                    <nav aria-label="Mobile navigation" className="flex flex-col space-y-10 text-center justify-center flex-grow">
                         {MAIN_NAV.map((item) => (
-                            <Link
-                                key={item.label}
-                                to={{ pathname: item.path, hash: item.hash }}
-                                className={cn(
-                                    "text-2xl font-light uppercase tracking-[0.4em] transition-colors",
-                                    isActive(item.path, item.hash) ? "text-accent" : "text-charcoal dark:text-white"
+                            <div key={item.label} className="flex flex-col items-center">
+                                <Link
+                                    to={{ pathname: item.path, hash: item.hash }}
+                                    aria-current={isActive(item.path, item.hash) ? 'page' : undefined}
+                                    className={cn(
+                                        "text-2xl font-light uppercase tracking-[0.4em] transition-colors",
+                                        isActive(item.path, item.hash) ? "text-primary dark:text-gold-beige" : "text-charcoal dark:text-white"
+                                    )}
+                                    // Don't close mobile menu if it has a submenu (like Store) so user can see/interact with submenu
+                                    onClick={(e) => {
+                                        if (item.hasSubmenu) {
+                                            if (mobileExpandedItems.includes(item.label)) {
+                                                // If already expanded, collapse it and prevent navigation (act as toggle)
+                                                e.preventDefault();
+                                                setExpandedMobileItems(prev => prev.filter(l => l !== item.label));
+                                            } else {
+                                                // If collapsed, expand it. Allow navigation to proceed.
+                                                setExpandedMobileItems(prev => [...prev, item.label]);
+                                            }
+                                        } else {
+                                            setIsMobileMenuOpen(false);
+                                        }
+                                    }}
+                                >
+                                    {item.label}
+                                </Link>
+
+                                {item.hasSubmenu && mobileExpandedItems.includes(item.label) && (
+                                    <div className="flex flex-col items-center gap-6 mt-8 animate-in slide-in-from-top-2 duration-300 w-full">
+                                        {STORE_SUBMENU.map((subItem) => (
+                                            <Link
+                                                key={subItem.path}
+                                                to={subItem.path}
+                                                className={cn(
+                                                    "text-lg font-light uppercase tracking-[0.3em] transition-colors block text-center w-full",
+                                                    isActive(subItem.path) ? "font-medium text-primary dark:text-gold-beige" : "text-charcoal/60 dark:text-white/60 hover:text-charcoal dark:hover:text-white"
+                                                )}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                            >
+                                                {subItem.label}
+                                            </Link>
+                                        ))}
+                                    </div>
                                 )}
-                                onClick={() => {
-                                    setIsMobileMenuOpen(false);
-                                    if (item.hash) {
-                                        setTimeout(() => {
-                                            const element = document.querySelector(item.hash);
-                                            element?.scrollIntoView({ behavior: 'smooth' });
-                                        }, 300); // Small delay to allow menu animation to finish/start closing
-                                    }
-                                }}
-                            >
-                                {item.label}
-                            </Link>
+                            </div>
                         ))}
                     </nav>
+
+                    <div className="mt-auto pt-12 border-t border-charcoal/10 dark:border-white/5 flex flex-col items-center gap-8">
+                        <button
+                            onClick={toggleTheme}
+                            aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+                            className="flex items-center justify-center border border-charcoal/10 dark:border-white/5 rounded-full w-12 h-12 hover:border-gold-beige dark:hover:border-gold-beige transition-all duration-500"
+                        >
+                            <span
+                                className="material-symbols-outlined text-[17px] text-charcoal dark:text-off-white"
+                                style={{ fontVariationSettings: "'wght' 300" }}
+                                aria-hidden="true"
+                            >
+                                {theme === 'light' ? 'light_mode' : 'dark_mode'}
+                            </span>
+                        </button>
+
+                        <div className="text-[8px] tracking-[0.3em] uppercase opacity-50 text-center leading-loose text-charcoal dark:text-white">
+                            <p>© 2026 ALEXEY KUKHTIN</p>
+                            <p>HAND SCULPTED IN TORONTO</p>
+                        </div>
+                    </div>
                 </div>
             )}
         </>

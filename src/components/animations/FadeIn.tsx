@@ -7,6 +7,7 @@ interface FadeInProps {
     className?: string;
     direction?: 'up' | 'down' | 'left' | 'right' | 'none';
     duration?: number;
+    variant?: any;
 }
 
 export function FadeIn({
@@ -14,12 +15,13 @@ export function FadeIn({
     delay = 0,
     className = "",
     direction = 'up',
-    duration = 0.5
+    duration = 0.5,
+    variant
 }: FadeInProps) {
     const ref = useRef(null);
     const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
 
-    const variants = {
+    const defaultVariants = {
         hidden: {
             opacity: 0,
             y: direction === 'up' ? 20 : direction === 'down' ? -20 : 0,
@@ -37,12 +39,17 @@ export function FadeIn({
         }
     };
 
+    // Use custom variant if provided, otherwise use default
+    const finalVariants = variant ? (typeof variant.show === 'function' ? { ...variant, show: variant.show(delay) } : variant) : defaultVariants;
+    const initialLabel = variant ? "hidden" : "hidden";
+    const animateLabel = variant ? (variant.show ? "show" : "visible") : "visible";
+
     return (
         <motion.div
             ref={ref}
-            initial="hidden"
-            animate={isInView ? "visible" : "hidden"}
-            variants={variants}
+            initial={initialLabel}
+            animate={isInView ? animateLabel : initialLabel}
+            variants={finalVariants}
             className={className}
         >
             {children}
@@ -83,8 +90,3 @@ export function FadeInStagger({
         </motion.div>
     );
 }
-
-export const fadeInItem = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
-};

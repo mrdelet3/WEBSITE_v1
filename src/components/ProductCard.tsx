@@ -7,9 +7,9 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
     return (
         <div
-            className="group block relative focus:outline-none focus:ring-1 focus:ring-primary focus:ring-offset-2 rounded-none"
+            className="group block relative rounded-none"
         >
-            <div className="aspect-square overflow-hidden bg-muted relative">
+            <div className="aspect-square overflow-hidden bg-charcoal/5 dark:bg-white/5 relative">
                 <img
                     src={product.image}
                     alt={product.title}
@@ -17,7 +17,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 />
             </div>
             <div className="py-4 px-4 text-center space-y-2">
-                <h3 className="text-xl font-display text-foreground group-hover:text-primary transition-colors duration-500">
+                <h3 className="text-xl font-display text-charcoal dark:text-off-white group-hover:text-primary dark:group-hover:text-gold-beige transition-colors duration-500">
                     {product.title}
                 </h3>
             </div>

@@ -25,7 +25,7 @@
     --secondary-foreground: 30 5% 17%;
 
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 30 5% 45%;
 
     --accent: 40 33% 75%;
     --accent-foreground: 30 5% 17%;
@@ -41,43 +41,52 @@
   }
 
   .dark {
-    --background: 0 0% 13%;
-    /* #212121 */
+    --background: 30 5% 13%;
+    /* #212121 Dark Charcoal */
     --foreground: 0 0% 99%;
-    /* #FCFCFC */
+    /* #FCFCFC Off-white */
 
-    --card: 0 0% 17%;
-    /* #2B2B2B */
+    --card: 30 5% 17%;
+    /* #2B2B2B Sidebar charcoal */
     --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 13%;
+    --popover: 30 5% 13%;
     --popover-foreground: 0 0% 96%;
 
-    --primary: 40 33% 74%;
-    /* #D4C4A8 Accent as primary in dark mode */
-    --primary-foreground: 0 0% 13%;
+    --primary: 40 33% 75%;
+    /* #D4C4A8 Gold Beige */
+    --primary-foreground: 30 5% 13%;
 
     --secondary: 34 13% 48%;
-    /* #8B7D6B */
+    /* #8B7D6B Primary */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 30 5% 20%;
+    /* Slightly lighter than bg */
+    --muted-foreground: 30 5% 65%;
 
-    --accent: 0 0% 18%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 40 33% 75%;
+    /* Use Gold Beige for UI accents in dark mode */
+    --accent-foreground: 30 5% 13%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
+    --border: 30 5% 22%;
+    /* Visible but subtle borders */
+    --input: 30 5% 22%;
     --ring: 40 33% 75%;
   }
 
-  body {
-    @apply bg-background text-foreground antialiased font-sans;
+  * {
+    @apply border-stone-200 dark:border-white/5;
   }
+
+  body {
+    @apply bg-bg-warm dark:bg-bg-dark text-charcoal dark:text-off-white antialiased font-sans transition-colors duration-500;
+  }
+
+
 
   /* Utility to hide scrollbar but keep functionality */
   .scrollbar-hide {

@@ -23,7 +23,7 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-background text-foreground transition-colors duration-300">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-bg-warm dark:bg-bg-dark text-charcoal dark:text-off-white transition-colors duration-500">
       <ScrollToTop />
       <ScrollToAnchor />
       <Toaster position="bottom-right" theme="system" />

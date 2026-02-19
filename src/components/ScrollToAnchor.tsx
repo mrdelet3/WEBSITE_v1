@@ -6,13 +6,24 @@ export function ScrollToAnchor() {
 
     useEffect(() => {
         if (hash) {
-            const element = document.getElementById(hash.slice(1));
-            if (element) {
-                // Short timeout to ensure the element is rendered and layout is stable
-                setTimeout(() => {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
-            }
+            // Helper function to retry finding the element
+            let attempt = 0;
+            const maxAttempts = 20; // Try for 2 seconds (20 * 100ms)
+
+            const scrollToElement = () => {
+                const element = document.getElementById(hash.slice(1));
+                if (element) {
+                    // Small delay to ensure layout is stable
+                    setTimeout(() => {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
+                } else if (attempt < maxAttempts) {
+                    attempt++;
+                    setTimeout(scrollToElement, 100);
+                }
+            };
+
+            scrollToElement();
         }
     }, [pathname, hash]);
 
