@@ -1,4 +1,4 @@
 @echo off
 git add -A
-git commit -m "fix: update Shopify API version to 2026-04 (latest stable)"
+git commit -m "refactor: replace placeholder products with 7 real sculptures"
 git push origin main
