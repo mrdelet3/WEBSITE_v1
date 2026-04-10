@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { Product } from '@/data/products';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ interface ProductModalProps {
 
 export function ProductModal({ product }: ProductModalProps) {
     const navigate = useNavigate();
+    const { category } = useParams<{ category: string }>();
     const { cart, addToCart, removeFromCart, isCartLoading } = useCart();
 
     // Build the array of all images for this product
@@ -37,9 +38,9 @@ export function ProductModal({ product }: ProductModalProps) {
 
     // Close modal function
     const handleClose = useCallback(() => {
-        // Navigate back to the collection (remove product ID from URL)
-        navigate(`/store/${product.category}`);
-    }, [navigate, product.category]);
+        // Navigate back to the collection using URL category (more reliable than inferred product.category)
+        navigate(`/store/${category || product.category}`);
+    }, [navigate, category, product.category]);
 
     // Navigate images
     const handlePrevImage = useCallback(() => {

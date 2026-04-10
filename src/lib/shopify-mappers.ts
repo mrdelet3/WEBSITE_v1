@@ -15,7 +15,7 @@ import type { ShopifyProduct, ShopifyCart, ShopifyCartLine } from "@/types/shopi
  * Convert a Shopify product into the local Product shape used by
  * ProductCard, ProductModal, and the Cart.
  */
-export function mapShopifyProduct(sp: ShopifyProduct): Product {
+export function mapShopifyProduct(sp: ShopifyProduct, collectionHandle?: string): Product {
   const firstImage = sp.images.edges[0]?.node;
   const price = sp.priceRange.minVariantPrice;
 
@@ -39,9 +39,10 @@ export function mapShopifyProduct(sp: ShopifyProduct): Product {
   const priceNum = parseFloat(price.amount);
   const formattedPrice = `$${priceNum.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 
-  // Determine category from product handle or collection association
-  // Shopify products will be categorized via collections
-  const category = inferCategory(sp);
+  // Use collection handle if provided (most reliable), otherwise infer from text
+  const category = collectionHandle
+    ? (["gypsum", "bronze", "clear"].includes(collectionHandle) ? collectionHandle as "gypsum" | "bronze" | "clear" : inferCategory(sp))
+    : inferCategory(sp);
 
   return {
     id: sp.handle, // Use handle for URL-friendly IDs

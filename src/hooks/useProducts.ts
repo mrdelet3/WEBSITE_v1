@@ -37,7 +37,7 @@ export function useProducts(category?: string): UseProductsResult {
         if (cancelled) return;
 
         if (shopifyProducts.length > 0) {
-          setProducts(shopifyProducts.map(mapShopifyProduct));
+          setProducts(shopifyProducts.map(p => mapShopifyProduct(p, currentCategory)));
           setIsFromShopify(true);
         } else {
           // Collection empty or not found — fall back to static data

@@ -62,7 +62,7 @@ export function Store() {
                 <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
                     {fetchedProducts.map((product) => (
                         <motion.div key={product.id} variants={fadeInItem}>
-                            <Link to={`/store/${product.category}/product/${product.id}`}>
+                            <Link to={`/store/${currentCategory}/product/${product.id}`}>
                                 <ProductCard product={product} />
                             </Link>
                         </motion.div>
