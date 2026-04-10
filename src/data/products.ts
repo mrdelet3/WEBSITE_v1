@@ -10,6 +10,10 @@ export interface Product {
     medium?: string;
     description?: string;
     materials: string[];
+    // Shopify-specific fields (populated when data comes from Shopify)
+    shopifyId?: string;
+    shopifyVariantId?: string;
+    images?: string[];
 }
 
 export const products: Product[] = [

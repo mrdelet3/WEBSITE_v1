@@ -1,12 +1,12 @@
 import { useCart } from '@/context/CartContext';
 import { Link } from 'react-router-dom';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, ExternalLink } from 'lucide-react';
 import { SEO } from '@/components/SEO';
 import { FadeIn } from '@/components/animations/FadeIn';
 import { Button } from '@/components/ui/button';
 
 export function Checkout() {
-    const { cart, removeFromCart, updateQuantity, total } = useCart();
+    const { cart, removeFromCart, updateQuantity, total, checkoutUrl, isCartLoading } = useCart();
 
     if (cart.length === 0) {
         return (
@@ -20,6 +20,12 @@ export function Checkout() {
             </div>
         );
     }
+
+    const handleCheckout = () => {
+        if (checkoutUrl) {
+            window.location.href = checkoutUrl;
+        }
+    };
 
     return (
         <div className="min-h-screen bg-bg-warm dark:bg-bg-dark p-6 md:p-20 transition-colors duration-500">
@@ -47,7 +53,7 @@ export function Checkout() {
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity - 1)}
                                                 className="px-2 py-1.5 hover:bg-charcoal hover:text-white dark:hover:bg-white dark:hover:text-bg-dark transition-all duration-300 disabled:opacity-10 disabled:hover:bg-transparent disabled:hover:text-current"
-                                                disabled={item.quantity <= 1}
+                                                disabled={item.quantity <= 1 || isCartLoading}
                                                 aria-label="Decrease quantity"
                                             >
                                                 <Minus size={10} strokeWidth={3} />
@@ -56,6 +62,7 @@ export function Checkout() {
                                             <button
                                                 onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                                 className="px-2 py-1.5 hover:bg-charcoal hover:text-white dark:hover:bg-white dark:hover:text-bg-dark transition-all duration-300"
+                                                disabled={isCartLoading}
                                                 aria-label="Increase quantity"
                                             >
                                                 <Plus size={10} strokeWidth={3} />
@@ -65,6 +72,7 @@ export function Checkout() {
                                     <button
                                         onClick={() => removeFromCart(item.id)}
                                         className="text-primary hover:opacity-70 transition-opacity border-b border-transparent hover:border-primary"
+                                        disabled={isCartLoading}
                                     >
                                         Remove
                                     </button>
@@ -72,6 +80,14 @@ export function Checkout() {
                             </div>
                         </div>
                     ))}
+
+                    {/* Continue Shopping link */}
+                    <Link
+                        to="/store"
+                        className="inline-flex items-center gap-2 text-sm uppercase tracking-[0.2em] text-primary/60 hover:text-primary transition-colors mt-4"
+                    >
+                        ← Continue Shopping
+                    </Link>
                 </div>
 
                 {/* Summary & Payment */}
@@ -85,7 +101,7 @@ export function Checkout() {
                         </div>
                         <div className="flex justify-between">
                             <span className="opacity-60 text-charcoal dark:text-off-white">Shipping</span>
-                            <span className="opacity-40 italic">Calculated next step</span>
+                            <span className="opacity-40 italic">Calculated at checkout</span>
                         </div>
                     </div>
 
@@ -96,15 +112,36 @@ export function Checkout() {
                         </span>
                     </div>
 
-                    <Button
-                        size="luxury"
-                        className="w-full bg-bronze-black text-white px-8 hover:bg-opacity-90 transition-all border-none"
-                    >
-                        Proceed via Email Inquiry
-                    </Button>
-                    <p className="mt-4 text-[10px] text-center opacity-50 uppercase tracking-widest">
-                        Secure checkout integration coming soon
-                    </p>
+                    {checkoutUrl ? (
+                        <Button
+                            size="luxury"
+                            className="w-full bg-bronze-black text-white px-8 hover:bg-opacity-90 transition-all border-none"
+                            onClick={handleCheckout}
+                            disabled={isCartLoading}
+                        >
+                            <span className="mr-auto">Proceed to Checkout</span>
+                            <ExternalLink className="w-4 h-4 opacity-60" />
+                        </Button>
+                    ) : (
+                        <Button
+                            size="luxury"
+                            className="w-full bg-bronze-black text-white px-8 hover:bg-opacity-90 transition-all border-none"
+                            disabled
+                        >
+                            Proceed via Email Inquiry
+                        </Button>
+                    )}
+
+                    {checkoutUrl && (
+                        <p className="mt-4 text-[10px] text-center opacity-50 uppercase tracking-widest">
+                            Secure checkout powered by Shopify
+                        </p>
+                    )}
+                    {!checkoutUrl && (
+                        <p className="mt-4 text-[10px] text-center opacity-50 uppercase tracking-widest">
+                            Secure checkout — add items to enable
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

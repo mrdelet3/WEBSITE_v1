@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type { Product } from '@/data/products';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, ShoppingBag, X, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ShoppingBag, X, Check, Loader2 } from 'lucide-react';
 import { useEffect, useCallback } from 'react';
 import { products } from '@/data/products';
 import { useCart } from '@/context/CartContext';
@@ -13,7 +13,7 @@ interface ProductModalProps {
 
 export function ProductModal({ product }: ProductModalProps) {
     const navigate = useNavigate();
-    const { cart, addToCart, removeFromCart } = useCart();
+    const { cart, addToCart, removeFromCart, isCartLoading } = useCart();
 
     // Get current item quantity in cart
     const cartItem = cart.find(item => item.id === product.id);
@@ -44,6 +44,25 @@ export function ProductModal({ product }: ProductModalProps) {
 
     if (!product) return null;
 
+    // Handle async add to cart
+    const handleAddToCart = async () => {
+        try {
+            await addToCart(product);
+            toast.success(`${product.title} added to cart`);
+        } catch {
+            toast.error('Failed to add to cart');
+        }
+    };
+
+    // Handle async remove from cart
+    const handleRemoveFromCart = async () => {
+        try {
+            await removeFromCart(product.id);
+            toast.info("Item removed from cart");
+        } catch {
+            toast.error('Failed to remove from cart');
+        }
+    };
 
     const bgImages = Array(9).fill(null).map((_, i) => products[i % products.length]?.image);
 
@@ -104,7 +123,7 @@ export function ProductModal({ product }: ProductModalProps) {
                         </div>
 
                         <div className="absolute bottom-12 right-12 text-[10px] tracking-[0.4em] uppercase font-medium z-20 text-charcoal/40 dark:text-off-white/40">
-                            01 / 05
+                            01 / {String(product.images?.length || 5).padStart(2, '0')}
                         </div>
                     </div>
 
@@ -175,16 +194,18 @@ export function ProductModal({ product }: ProductModalProps) {
                                     <Button
                                         variant="luxury"
                                         size="luxury"
-                                        onClick={() => {
-                                            addToCart(product);
-                                            toast.success(`${product.title} added to cart`);
-                                        }}
+                                        onClick={handleAddToCart}
+                                        disabled={isCartLoading}
                                         className="w-full"
                                     >
                                         <span className="mr-auto">
-                                            Add to Cart {quantity > 0 && `(${quantity})`}
+                                            {isCartLoading ? 'Adding...' : `Add to Cart ${quantity > 0 ? `(${quantity})` : ''}`}
                                         </span>
-                                        <ShoppingBag className="w-5 h-5 font-extralight group-hover:translate-x-1 transition-transform" />
+                                        {isCartLoading ? (
+                                            <Loader2 className="w-5 h-5 animate-spin" />
+                                        ) : (
+                                            <ShoppingBag className="w-5 h-5 font-extralight group-hover:translate-x-1 transition-transform" />
+                                        )}
                                     </Button>
 
                                     {/* Overlapping X Reset Button - Refined Hover Effect */}
@@ -192,10 +213,9 @@ export function ProductModal({ product }: ProductModalProps) {
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                removeFromCart(product.id);
-                                                toast.info("Item removed from cart");
+                                                handleRemoveFromCart();
                                             }}
-                                            className="absolute -top-3 -left-3 w-8 h-8 rounded-full shadow-lg flex items-center justify-center transition-all transform hover:scale-110 z-20 border border-primary text-primary bg-white/20 dark:bg-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-charcoal transition-all duration-300"
+                                            className="absolute -top-3 -left-3 w-8 h-8 rounded-full shadow-lg flex items-center justify-center transition-all transform hover:scale-110 z-20 border border-primary text-primary bg-white/20 dark:bg-white/10 backdrop-blur-sm hover:bg-white dark:hover:bg-charcoal"
                                             title="Reset quantity"
                                         >
                                             <X className="w-4 h-4" />

@@ -1,5 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
-import { products } from '@/data/products';
+import { useProducts } from '@/hooks/useProducts';
+import { products as staticProducts } from '@/data/products';
 import { ProductCard } from '@/components/ProductCard';
 import { ProductModal } from '@/components/ProductModal';
 import { FadeInStagger } from '@/components/animations/FadeIn';
@@ -11,13 +12,15 @@ export function Store() {
     const { category, id } = useParams<{ category: string; id: string }>();
     const currentCategory = category ? category.toLowerCase() : 'gypsum';
 
-    // Find filtered products for the grid
-    const filteredProducts = products.filter(
-        (product) => product.category === currentCategory
-    );
+    // Fetch products from Shopify (falls back to static data)
+    const { products: fetchedProducts, isLoading } = useProducts(currentCategory);
 
-    // Find selected product for the modal
-    const selectedProduct = id ? products.find(p => p.id === id) : null;
+    // For the product modal, find the selected product
+    // Support both Shopify handles (e.g. "classical-male-bust-i") and numeric IDs
+    const selectedProduct = id
+        ? fetchedProducts.find(p => p.id === id) ||
+          staticProducts.find(p => p.id === id)
+        : null;
 
     const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -43,9 +46,21 @@ export function Store() {
                 </p>
             </header>
 
-            {filteredProducts.length > 0 ? (
+            {isLoading ? (
+                /* Skeleton grid matching the gallery aesthetic */
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="animate-pulse">
+                            <div className="aspect-square bg-charcoal/5 dark:bg-white/5" />
+                            <div className="py-4 px-4 text-center space-y-2">
+                                <div className="h-5 bg-charcoal/5 dark:bg-white/5 rounded-full w-3/4 mx-auto" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : fetchedProducts.length > 0 ? (
                 <FadeInStagger className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-8 gap-y-8">
-                    {filteredProducts.map((product) => (
+                    {fetchedProducts.map((product) => (
                         <motion.div key={product.id} variants={fadeInItem}>
                             <Link to={`/store/${product.category}/product/${product.id}`}>
                                 <ProductCard product={product} />
