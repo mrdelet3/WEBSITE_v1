@@ -146,14 +146,14 @@ export function ProductModal({ product }: ProductModalProps) {
                             <div className="absolute bottom-10 left-10 flex gap-4 z-20">
                                 <button
                                     onClick={handlePrevImage}
-                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white cursor-pointer"
+                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/20 dark:border-white/30 bg-white/40 dark:bg-black/40 hover:bg-white/60 dark:hover:bg-black/60 shadow-sm text-charcoal dark:text-off-white cursor-pointer"
                                     aria-label="Previous image"
                                 >
                                     <ArrowLeft className="w-5 h-5 font-light" />
                                 </button>
                                 <button
                                     onClick={handleNextImage}
-                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white cursor-pointer"
+                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/20 dark:border-white/30 bg-white/40 dark:bg-black/40 hover:bg-white/60 dark:hover:bg-black/60 shadow-sm text-charcoal dark:text-off-white cursor-pointer"
                                     aria-label="Next image"
                                 >
                                     <ArrowRight className="w-5 h-5 font-light" />
@@ -181,7 +181,10 @@ export function ProductModal({ product }: ProductModalProps) {
 
                             <div className="mb-12">
                                 <p className="font-price text-3xl lg:text-4xl font-light text-primary tracking-tight flex items-baseline gap-4">
-                                    {product.price} <span className="text-xs font-medium tracking-[0.3em] text-primary/70 uppercase">CAD</span>
+                                    {product.price === '$0' ? 'SOLD' : product.price} 
+                                    {product.price !== '$0' && product.price !== 'SOLD' && (
+                                        <span className="text-xs font-medium tracking-[0.3em] text-primary/70 uppercase">CAD</span>
+                                    )}
                                 </p>
                             </div>
 
@@ -234,11 +237,11 @@ export function ProductModal({ product }: ProductModalProps) {
                                         variant="luxury"
                                         size="luxury"
                                         onClick={handleAddToCart}
-                                        disabled={isCartLoading}
+                                        disabled={isCartLoading || product.price === '$0' || product.price === 'SOLD'}
                                         className="w-full"
                                     >
                                         <span className="mr-auto">
-                                            {isCartLoading ? 'Adding...' : `Add to Cart ${quantity > 0 ? `(${quantity})` : ''}`}
+                                            {isCartLoading ? 'Adding...' : (product.price === '$0' || product.price === 'SOLD') ? 'Sold Out' : `Add to Cart ${quantity > 0 ? `(${quantity})` : ''}`}
                                         </span>
                                         {isCartLoading ? (
                                             <Loader2 className="w-5 h-5 animate-spin" />

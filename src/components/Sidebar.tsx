@@ -15,7 +15,6 @@ const MAIN_NAV = [
 const STORE_SUBMENU = [
     { label: 'Gypsum', path: '/store/gypsum' },
     { label: 'Bronze', path: '/store/bronze' },
-    { label: 'Clear', path: '/store/clear' },
 ];
 
 export function Sidebar() {
