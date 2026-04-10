@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import type { Product } from '@/data/products';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, ShoppingBag, X, Check, Loader2 } from 'lucide-react';
-import { useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { products } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 
@@ -15,6 +15,22 @@ export function ProductModal({ product }: ProductModalProps) {
     const navigate = useNavigate();
     const { cart, addToCart, removeFromCart, isCartLoading } = useCart();
 
+    // Build the array of all images for this product
+    const allImages = useMemo(() => {
+        if (product.images && product.images.length > 0) {
+            return product.images;
+        }
+        // Fallback: just the single hero image
+        return [product.image];
+    }, [product.images, product.image]);
+
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    // Reset index when product changes
+    useEffect(() => {
+        setCurrentImageIndex(0);
+    }, [product.id]);
+
     // Get current item quantity in cart
     const cartItem = cart.find(item => item.id === product.id);
     const quantity = cartItem?.quantity || 0;
@@ -25,22 +41,37 @@ export function ProductModal({ product }: ProductModalProps) {
         navigate(`/store/${product.category}`);
     }, [navigate, product.category]);
 
-    // Close on escape key
+    // Navigate images
+    const handlePrevImage = useCallback(() => {
+        setCurrentImageIndex(prev =>
+            prev === 0 ? allImages.length - 1 : prev - 1
+        );
+    }, [allImages.length]);
+
+    const handleNextImage = useCallback(() => {
+        setCurrentImageIndex(prev =>
+            prev === allImages.length - 1 ? 0 : prev + 1
+        );
+    }, [allImages.length]);
+
+    // Close on escape key, navigate images with arrow keys
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') handleClose();
+            if (e.key === 'ArrowLeft') handlePrevImage();
+            if (e.key === 'ArrowRight') handleNextImage();
         };
-        window.addEventListener('keydown', handleEsc);
+        window.addEventListener('keydown', handleKeyDown);
 
         // Prevent body scroll and handle layout shift
         const originalStyle = window.getComputedStyle(document.body).overflow;
         document.body.style.overflow = 'hidden';
 
         return () => {
-            window.removeEventListener('keydown', handleEsc);
+            window.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = originalStyle;
         };
-    }, [handleClose]);
+    }, [handleClose, handlePrevImage, handleNextImage]);
 
     if (!product) return null;
 
@@ -65,6 +96,8 @@ export function ProductModal({ product }: ProductModalProps) {
     };
 
     const bgImages = Array(9).fill(null).map((_, i) => products[i % products.length]?.image);
+
+    const hasMultipleImages = allImages.length > 1;
 
     return (
         <div className="fixed inset-0 z-[100] overflow-hidden">
@@ -101,29 +134,34 @@ export function ProductModal({ product }: ProductModalProps) {
                     {/* Left: Image */}
                     <div className="lg:w-[55%] h-[45vh] lg:h-full relative overflow-hidden flex items-center justify-center border-r border-charcoal/10 dark:border-white/5 bg-[radial-gradient(circle_at_center,_#F2F2F2_0%,_#E8E8E8_100%)] dark:bg-zinc-900">
                         <img
-                            src={product.image}
-                            alt={product.title}
-                            className="w-full h-full object-cover mix-blend-multiply opacity-90 dark:mix-blend-normal dark:opacity-100"
+                            key={currentImageIndex}
+                            src={allImages[currentImageIndex]}
+                            alt={`${product.title} - Image ${currentImageIndex + 1} of ${allImages.length}`}
+                            className="w-full h-full object-cover mix-blend-multiply opacity-90 dark:mix-blend-normal dark:opacity-100 animate-in fade-in duration-300"
                         />
 
-                        {/* Nav Buttons (Visual) */}
-                        <div className="absolute bottom-10 left-10 flex gap-4 z-20">
-                            <button
-                                className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white"
-                                aria-label="Previous image"
-                            >
-                                <ArrowLeft className="w-5 h-5 font-light" />
-                            </button>
-                            <button
-                                className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white"
-                                aria-label="Next image"
-                            >
-                                <ArrowRight className="w-5 h-5 font-light" />
-                            </button>
-                        </div>
+                        {/* Nav Buttons */}
+                        {hasMultipleImages && (
+                            <div className="absolute bottom-10 left-10 flex gap-4 z-20">
+                                <button
+                                    onClick={handlePrevImage}
+                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white cursor-pointer"
+                                    aria-label="Previous image"
+                                >
+                                    <ArrowLeft className="w-5 h-5 font-light" />
+                                </button>
+                                <button
+                                    onClick={handleNextImage}
+                                    className="w-12 h-12 flex items-center justify-center backdrop-blur-md transition-all rounded-full focus:outline-none focus:ring-1 focus:ring-primary border border-charcoal/10 dark:border-white/20 hover:bg-charcoal/5 dark:hover:bg-white/10 text-charcoal dark:text-off-white cursor-pointer"
+                                    aria-label="Next image"
+                                >
+                                    <ArrowRight className="w-5 h-5 font-light" />
+                                </button>
+                            </div>
+                        )}
 
                         <div className="absolute bottom-12 right-12 text-[10px] tracking-[0.4em] uppercase font-medium z-20 text-charcoal/40 dark:text-off-white/40">
-                            01 / {String(product.images?.length || 5).padStart(2, '0')}
+                            {String(currentImageIndex + 1).padStart(2, '0')} / {String(allImages.length).padStart(2, '0')}
                         </div>
                     </div>
 
