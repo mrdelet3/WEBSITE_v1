@@ -37,7 +37,31 @@ export function useProducts(category?: string): UseProductsResult {
         if (cancelled) return;
 
         if (shopifyProducts.length > 0) {
-          setProducts(shopifyProducts.map(p => mapShopifyProduct(p, currentCategory)));
+          const mapped = shopifyProducts.map(p => mapShopifyProduct(p, currentCategory));
+
+          // Merge with static data to fill missing Shopify metafields
+          // (dimensions, weight, etc. may not be set in Shopify yet)
+          const merged = mapped.map(shopifyProduct => {
+            const staticMatch = staticProducts.find(sp => sp.id === shopifyProduct.id);
+            if (!staticMatch) return shopifyProduct;
+
+            return {
+              ...shopifyProduct,
+              // Prefer Shopify data, fall back to static for empty fields
+              dimensions: {
+                h: shopifyProduct.dimensions.h || staticMatch.dimensions.h,
+                w: shopifyProduct.dimensions.w || staticMatch.dimensions.w,
+                d: shopifyProduct.dimensions.d || staticMatch.dimensions.d,
+              },
+              weight: shopifyProduct.weight || staticMatch.weight,
+              edition: shopifyProduct.edition || staticMatch.edition,
+              medium: shopifyProduct.medium || staticMatch.medium,
+              description: shopifyProduct.description || staticMatch.description,
+              materials: shopifyProduct.materials.length > 0 ? shopifyProduct.materials : staticMatch.materials,
+            };
+          });
+
+          setProducts(merged);
           setIsFromShopify(true);
         } else {
           // Collection empty or not found — fall back to static data
