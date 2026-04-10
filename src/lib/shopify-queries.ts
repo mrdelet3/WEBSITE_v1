@@ -34,7 +34,6 @@ const PRODUCT_FIELDS = `
         title
         availableForSale
         price { amount currencyCode }
-        quantityAvailable
       }
     }
   }

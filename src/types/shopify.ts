@@ -24,7 +24,6 @@ export interface ShopifyVariant {
   title: string;
   availableForSale: boolean;
   price: ShopifyPrice;
-  quantityAvailable: number | null;
 }
 
 export interface ShopifyMetafield {

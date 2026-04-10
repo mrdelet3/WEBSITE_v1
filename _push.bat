@@ -1,4 +1,4 @@
 @echo off
 git add -A
-git commit -m "refactor: replace placeholder products with 7 real sculptures"
+git commit -m "fix: remove quantityAvailable field to avoid inventory permission requirement"
 git push origin main
